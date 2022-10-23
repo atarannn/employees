@@ -6,21 +6,38 @@ import AppFilter from '../app-filter/app-filter';
 import EmployeesList from '../employees-list/employees-list';
 import EmployeesAddForm from '../employees-add-form/employees-add-form';
 
+import { getFirestore } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
+import { app } from "../../firebase-config"
+
 import './app.css';
+
+const db = getFirestore(app);
 
 class App extends Component {
     constructor(props) {
         super(props);
+
         this.state = {
-            data: [
-                {name: 'John C.', salary: 800, increase: false, rise: true, id: 1},
-                {name: 'Alex M.', salary: 3000, increase: true, rise: false, id: 2},
-                {name: 'Carl W.', salary: 5000, increase: false, rise: false, id: 3}
-            ],
+            data: [],
             term: '',
             filter: 'all'
         }
         this.maxId = 4;
+    }
+
+    async componentDidMount()  {
+        const empl = [];
+        const querySnapshot = await getDocs(collection(db, "employees"));
+        querySnapshot.forEach((doc) => {
+            const docData = doc.data();
+            empl.push({id: doc.id, name: docData.name, salary: docData.salary , increase: docData.increase , rise: docData.rise })
+        });
+        this.setState(({data}) => {
+            return {
+                data: empl
+            }
+        });
     }
 
     deleteItem = (id) => {
