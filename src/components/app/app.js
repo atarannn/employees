@@ -6,8 +6,8 @@ import AppFilter from '../app-filter/app-filter';
 import EmployeesList from '../employees-list/employees-list';
 import EmployeesAddForm from '../employees-add-form/employees-add-form';
 
-import { getFirestore } from "firebase/firestore";
-import { collection, getDocs } from "firebase/firestore";
+import {getFirestore} from "firebase/firestore";
+import { collection, doc, query, getDocs, deleteDoc, addDoc } from "firebase/firestore";
 import { app } from "../../firebase-config"
 
 import './app.css';
@@ -28,10 +28,15 @@ class App extends Component {
 
     async componentDidMount()  {
         const empl = [];
-        const querySnapshot = await getDocs(collection(db, "employees"));
-        querySnapshot.forEach((doc) => {
+        const emplList = await getDocs(collection(db, "employees"));
+        emplList.forEach((doc) => {
             const docData = doc.data();
-            empl.push({id: doc.id, name: docData.name, salary: docData.salary , increase: docData.increase , rise: docData.rise })
+            empl.push({
+                id: doc.id,
+                name: docData.name,
+                salary: docData.salary ,
+                increase: docData.increase ,
+                rise: docData.rise })
         });
         this.setState(({data}) => {
             return {
@@ -40,26 +45,29 @@ class App extends Component {
         });
     }
 
-    deleteItem = (id) => {
-        this.setState(({data}) => {
-            return {
-                data: data.filter(item => item.id !== id)
+    async deleteItem(idToBeDeleted) {
+        const e = query(collection(db,'employees'));
+        const employees = await getDocs(e);
+
+        for(let item of employees.docs){
+            if(item.id === idToBeDeleted) {
+                await deleteDoc(doc(db, 'employees', item.id));
             }
-        })
+        }
+        return {
+            data: employees
+        }
     }
 
-    addItem = (name, salary) => {
-        const newItem = {
-            name,
-            salary,
+    async addItem() {
+        await addDoc(collection(db, 'employees'),{
+            name: 'Anastasia',
+            salary: 2000,
             increase: false,
-            rise: false,
-            id: this.maxId++
-        }
-        this.setState(({data}) => {
-            const newArr = [...data, newItem];
+            rise: false
+        }).then((docRef) => {
             return {
-                data: newArr
+                data: docRef.id
             }
         });
     }

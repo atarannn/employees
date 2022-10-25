@@ -3,7 +3,7 @@ import "./app-filter.css";
 const AppFilter = (props) => {
     const buttonsData = [
         {name: 'all', label: 'All employees'},
-        {name: 'rise', label: 'Аor promotion'},
+        {name: 'rise', label: 'On promotion'},
         {name: 'moreThen1000', label: 'Salary more than $1000'}
     ];
 
