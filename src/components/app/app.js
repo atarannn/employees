@@ -24,9 +24,15 @@ class App extends Component {
             filter: 'all'
         }
         this.maxId = 4;
+        this.addItem = this.addItem.bind(this);
+        this.deleteItem = this.deleteItem.bind(this);
     }
 
     async componentDidMount()  {
+        await this.getItems();
+    }
+
+    async getItems() {
         const empl = [];
         const emplList = await getDocs(collection(db, "employees"));
         emplList.forEach((doc) => {
@@ -46,6 +52,7 @@ class App extends Component {
     }
 
     async deleteItem(idToBeDeleted) {
+        const self = this;
         const e = query(collection(db,'employees'));
         const employees = await getDocs(e);
 
@@ -54,21 +61,34 @@ class App extends Component {
                 await deleteDoc(doc(db, 'employees', item.id));
             }
         }
+        self.setState((state) => {
+            return {
+                ...state, data: state.data.filter( (l) => {
+                    return l.id !== idToBeDeleted;
+                })
+            }
+        })
         return {
             data: employees
         }
     }
 
-    async addItem() {
+    async addItem(name, salary) {
+        const self = this;
         await addDoc(collection(db, 'employees'),{
-            name: 'Anastasia',
-            salary: 2000,
+            name: name,
+            salary: salary,
             increase: false,
             rise: false
         }).then((docRef) => {
-            return {
-                data: docRef.id
-            }
+            self.setState((state) => {
+                return { ...state, data: [...state.data, {
+                    id: docRef.id,
+                        name: name,
+                        salary: salary,
+                        increase: false,
+                        rise: false}]};
+            });
         });
     }
 
